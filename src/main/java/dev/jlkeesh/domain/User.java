@@ -10,8 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-public class User {
-    private Long id;
+public class User extends BaseDomain {
     private String username;
     private String password;
     private String email;

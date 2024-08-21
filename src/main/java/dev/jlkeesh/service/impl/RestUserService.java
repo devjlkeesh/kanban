@@ -51,7 +51,7 @@ public class RestUserService implements UserService {
     @Override
     public boolean update(@NonNull Long id, @NonNull UserUpdateDto dto) {
         User user = requireUser(id);
-        user = userMapper.fromUpdateDto(user, dto);
+        user = userMapper.fromUpdateDto(dto, user);
         userDao.update(user);
         return true;
     }

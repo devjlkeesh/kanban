@@ -20,5 +20,7 @@ public abstract class AbstractController<S> implements HttpHandler {
 
     protected abstract void doDelete(HttpExchange http) throws IOException;
 
-    protected abstract void doUnhandled(HttpExchange http) throws IOException;
+    protected void doUnhandled(HttpExchange http) throws IOException {
+
+    }
 }

@@ -17,7 +17,7 @@ import static dev.jlkeesh.config.ApplicationConfig.GSON;
 
 public class UserController extends AbstractController<UserService> {
 
-    protected UserController(UserService service) {
+    public UserController(UserService service) {
         super(service);
     }
 
