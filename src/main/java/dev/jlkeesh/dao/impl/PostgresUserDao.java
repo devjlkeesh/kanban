@@ -82,7 +82,7 @@ public class PostgresUserDao implements UserDao {
     }
 
     @Override
-    public User insert(User user) {
+    public User save(User user) {
         try (PreparedStatement pstm = connection.prepareStatement(INSERT_QUERY)) {
             pstm.setString(1, user.getUsername());
             pstm.setString(2, user.getPassword());

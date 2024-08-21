@@ -3,10 +3,15 @@ package dev.jlkeesh;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import dev.jlkeesh.controller.UserController;
 import dev.jlkeesh.dao.UserDao;
 import dev.jlkeesh.dao.impl.PostgresUserDao;
+import dev.jlkeesh.mapper.app.UserMapper;
 import dev.jlkeesh.mapper.db.PostgresUserRowMapper;
+import dev.jlkeesh.mapper.db.UserRowMapper;
 import dev.jlkeesh.properties.DatabaseProperties;
+import dev.jlkeesh.service.UserService;
+import dev.jlkeesh.service.impl.RestUserService;
 import dev.jlkeesh.utils.UserSession;
 
 import java.io.IOException;
@@ -25,18 +30,14 @@ public class Main {
                 DatabaseProperties.password
         );
         UserSession userSession = new UserSession();
-        UserDao userDao = new PostgresUserDao(connection, new PostgresUserRowMapper(), userSession);
+        UserRowMapper userRowMapper = new PostgresUserRowMapper();
+        UserMapper userMapper = new UserMapper();
+        UserDao userDao = new PostgresUserDao(connection, userRowMapper, userSession);
+        UserService userService = new RestUserService(userDao, userMapper);
+        UserController userController = new UserController(userService);
 
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(9090), 0);
-        httpServer.createContext("/auth_user", new HttpHandler() {
-            @Override
-            public void handle(HttpExchange httpExchange) throws IOException {
-                httpExchange.sendResponseHeaders(200, 0);
-                OutputStream os = httpExchange.getResponseBody();
-                os.write("Hello guys".getBytes());
-                os.close();
-            }
-        });
+        httpServer.createContext("/users", userController);
         httpServer.setExecutor(Executors.newSingleThreadExecutor());
         httpServer.start();
     }

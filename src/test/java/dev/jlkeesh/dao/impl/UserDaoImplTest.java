@@ -47,7 +47,7 @@ class UserDaoImplTest {
         user.setPassword(PasswordUtil.hash("123"));
         user.setEmail("sherzod@mail.ru");
         user.setRole(AuthRole.MANAGER);
-        userDao.insert(user);
+        userDao.save(user);
         Assertions.assertNotNull(user.getId());
     }
 
