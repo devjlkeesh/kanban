@@ -82,6 +82,23 @@ public class PostgresUserDao implements UserDao {
     }
 
     @Override
+    public Optional<User> findByEmailOrUsername(@NonNull String subject) {
+        try (PreparedStatement pstm = connection.prepareStatement(SELECT_QUERY + " and (t.email ilike ? or t.username ilike ?)")) {
+            pstm.setString(1, subject);
+            pstm.setString(2, subject);
+            ResultSet rs = pstm.executeQuery();
+            if (rs.next()) {
+                User user = userRowMapper.mapTo(rs);
+                return Optional.of(user);
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            log.severe("error while getting user : " + subject);
+            throw new DataAccessException(e);
+        }
+    }
+
+    @Override
     public User save(User user) {
         try (PreparedStatement pstm = connection.prepareStatement(INSERT_QUERY)) {
             pstm.setString(1, user.getUsername());

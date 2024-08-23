@@ -1,6 +1,7 @@
 package dev.jlkeesh;
 
 import com.sun.net.httpserver.HttpServer;
+import dev.jlkeesh.controller.AuthLoginController;
 import dev.jlkeesh.controller.UserController;
 import dev.jlkeesh.dao.UserDao;
 import dev.jlkeesh.dao.impl.PostgresUserDao;
@@ -34,10 +35,13 @@ public class KanbanApplication {
 
         UserDao userDao = new PostgresUserDao(connection, userRowMapper, userSession);
         UserService userService = new RestUserService(userDao, userMapper);
+
         UserController userController = new UserController(userService);
+        AuthLoginController authLoginController = new AuthLoginController(userService);
 
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(9090), 0);
         httpServer.createContext("/users", userController);
+        httpServer.createContext("/auth/login", authLoginController);
         httpServer.setExecutor(Executors.newSingleThreadExecutor());
         httpServer.start();
         log.info("Kanban application started");

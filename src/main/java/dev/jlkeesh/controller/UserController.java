@@ -39,12 +39,12 @@ public class UserController extends AbstractController<UserService> {
     }
 
     @Override
-    protected void doPut(HttpExchange http) throws IOException {
-        http.sendResponseHeaders(200, 0);
+    protected void doPut(HttpExchange http) {
+
     }
 
     @Override
-    protected void doGet(HttpExchange http) throws IOException {
+    protected void doGet(HttpExchange http) throws IOException{
         http.sendResponseHeaders(200, 0);
         OutputStream os = http.getResponseBody();
         List<UserDto> users = service.getAll(new UserCriteria());
@@ -54,8 +54,8 @@ public class UserController extends AbstractController<UserService> {
     }
 
     @Override
-    protected void doDelete(HttpExchange http) throws IOException {
-        http.sendResponseHeaders(200, 0);
+    protected void doDelete(HttpExchange http)  throws IOException{
+
     }
 
 }

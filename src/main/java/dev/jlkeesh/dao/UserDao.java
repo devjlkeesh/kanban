@@ -9,4 +9,6 @@ public interface UserDao extends BaseDao<User, Long> {
     Optional<User> findByUsername(@NonNull String username);
 
     Optional<User> findByEmail(@NonNull String email);
+
+    Optional<User> findByEmailOrUsername(@NonNull String subject);
 }

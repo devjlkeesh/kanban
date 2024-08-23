@@ -3,13 +3,16 @@ package dev.jlkeesh.service.impl;
 import dev.jlkeesh.criteria.UserCriteria;
 import dev.jlkeesh.dao.UserDao;
 import dev.jlkeesh.domain.User;
+import dev.jlkeesh.dto.auth.LoginDto;
 import dev.jlkeesh.dto.user.UserCreateDto;
 import dev.jlkeesh.dto.user.UserDto;
 import dev.jlkeesh.dto.user.UserUpdateDto;
+import dev.jlkeesh.enums.AuthRole;
 import dev.jlkeesh.exception.NotFoundException;
 import dev.jlkeesh.exception.ServiceException;
 import dev.jlkeesh.mapper.app.UserMapper;
 import dev.jlkeesh.service.UserService;
+import dev.jlkeesh.utils.AESUtil;
 import dev.jlkeesh.utils.PasswordUtil;
 import dev.jlkeesh.validator.UserValidator;
 import lombok.NonNull;
@@ -70,5 +73,22 @@ public class RestUserService implements UserService {
         User user = requireUser(id);
         userDao.delete(user);
         return true;
+    }
+
+    @Override
+    public String login(@NonNull LoginDto dto) {
+        User user = userDao.findByEmailOrUsername(dto.subject())
+                .orElseThrow(() -> new ServiceException("unauthorized", 401));
+        if (!PasswordUtil.checkPassword(dto.password(), user.getPassword())) {
+            //TODO bu yerda login try count ni oshirish kerak
+            throw new ServiceException("unauthorized", 400);
+        }
+        Long userId = user.getId();
+        String username = user.getUsername();
+        String email = user.getEmail();
+        AuthRole userRole = user.getRole();
+        String inputData = userId + ":" + username + ":" + email + ":" + userRole;
+        String token = AESUtil.encrypt(inputData);
+        return token;
     }
 }
