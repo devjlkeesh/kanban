@@ -2,13 +2,10 @@ package dev.jlkeesh.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import dev.jlkeesh.criteria.UserCriteria;
-import dev.jlkeesh.dto.BaseErrorDto;
 import dev.jlkeesh.dto.BaseResponse;
 import dev.jlkeesh.dto.user.UserCreateDto;
 import dev.jlkeesh.dto.user.UserDto;
-import dev.jlkeesh.exception.ServiceException;
 import dev.jlkeesh.service.UserService;
-import dev.jlkeesh.utils.ExceptionUtil;
 import dev.jlkeesh.utils.GsonUtil;
 import lombok.extern.java.Log;
 
@@ -18,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 import static dev.jlkeesh.config.ApplicationConfig.GSON;
 
@@ -60,8 +58,4 @@ public class UserController extends AbstractController<UserService> {
         http.sendResponseHeaders(200, 0);
     }
 
-    @Override
-    protected void doUnhandled(HttpExchange http) throws IOException {
-
-    }
 }

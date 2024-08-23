@@ -11,6 +11,7 @@ import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.UUID;
 
 @Log
 public abstract class AbstractController<S> implements HttpHandler {
@@ -25,8 +26,8 @@ public abstract class AbstractController<S> implements HttpHandler {
         try {
             String requestMethod = http.getRequestMethod();
             switch (requestMethod) {
-                case "GET" -> doGet(http);
-                case "POST" -> doPost(http);
+                case "GET" -> doGetProxy(http);
+                case "POST" -> doPostProxy(http);
                 case "PUT" -> doPut(http);
                 case "DELETE" -> doDelete(http);
                 default -> doUnhandled(http);
@@ -40,16 +41,30 @@ public abstract class AbstractController<S> implements HttpHandler {
         }
     }
 
+    private void doPostProxy(HttpExchange http) throws IOException {
+        UUID traceId = UUID.randomUUID();
+        log.info("UserController doPost. incoming request : " + traceId);
+        doPost(http);
+        log.info("UserController doPost. out coming request : " + traceId);
+    }
+
     protected abstract void doPost(HttpExchange http) throws IOException;
 
     protected abstract void doPut(HttpExchange http) throws IOException;
+
+    private void doGetProxy(HttpExchange http) throws IOException {
+        UUID traceId = UUID.randomUUID();
+        log.info("UserController doGet. incoming request : " + traceId);
+        doGet(http);
+        log.info("UserController doGet. out coming request : " + traceId);
+    }
 
     protected abstract void doGet(HttpExchange http) throws IOException;
 
     protected abstract void doDelete(HttpExchange http) throws IOException;
 
     protected void doUnhandled(HttpExchange http) throws IOException {
-
+        handlerAdvice(http, new BaseErrorDto("bad request"), 400);
     }
 
     private static void handlerAdvice(HttpExchange http, BaseErrorDto error, int code) throws IOException {
