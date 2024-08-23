@@ -8,6 +8,7 @@ import dev.jlkeesh.dto.user.UserCreateDto;
 import dev.jlkeesh.dto.user.UserDto;
 import dev.jlkeesh.exception.ServiceException;
 import dev.jlkeesh.service.UserService;
+import dev.jlkeesh.utils.ExceptionUtil;
 import dev.jlkeesh.utils.GsonUtil;
 import lombok.extern.java.Log;
 
@@ -28,43 +29,15 @@ public class UserController extends AbstractController<UserService> {
     }
 
     @Override
-    public void handle(HttpExchange http) throws IOException {
-        String requestMethod = http.getRequestMethod();
-        switch (requestMethod) {
-            case "GET" -> doGet(http);
-            case "POST" -> doPost(http);
-            case "PUT" -> doPut(http);
-            case "DELETE" -> doDelete(http);
-            default -> doUnhandled(http);
-        }
-    }
-
-    @Override
     protected void doPost(HttpExchange http) throws IOException {
         OutputStream os = http.getResponseBody();
-        try {
-            InputStream is = http.getRequestBody();
-            UserCreateDto dto = GSON.fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), UserCreateDto.class);
-            Long id = service.create(dto);
-            http.sendResponseHeaders(200, 0);
-            BaseResponse<Long> response = new BaseResponse<>(id);
-            os.write(GsonUtil.objectToByteArray(response));
-            os.close();
-        } catch (ServiceException e) {
-            http.sendResponseHeaders(e.getCode(), 0);
-            BaseErrorDto error = new BaseErrorDto(e.getMessage());
-            BaseResponse<Long> response = new BaseResponse<>(error);
-            os.write(GsonUtil.objectToByteArray(response));
-            os.close();
-            e.printStackTrace();
-        } catch (Exception e) {
-            http.sendResponseHeaders(500, 0);
-            BaseErrorDto error = new BaseErrorDto("internal service error");
-            BaseResponse<Long> response = new BaseResponse<>(error);
-            os.write(GsonUtil.objectToByteArray(response));
-            os.close();
-            e.printStackTrace();
-        }
+        InputStream is = http.getRequestBody();
+        UserCreateDto dto = GSON.fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), UserCreateDto.class);
+        Long id = service.create(dto);
+        BaseResponse<Long> response = new BaseResponse<>(id);
+        http.sendResponseHeaders(200, 0);
+        os.write(GsonUtil.objectToByteArray(response));
+        os.close();
     }
 
     @Override
@@ -77,8 +50,8 @@ public class UserController extends AbstractController<UserService> {
         http.sendResponseHeaders(200, 0);
         OutputStream os = http.getResponseBody();
         List<UserDto> users = service.getAll(new UserCriteria());
-        String responseData = GSON.toJson(users);
-        os.write(responseData.getBytes());
+        BaseResponse<List<UserDto>> response = new BaseResponse<>(users);
+        os.write(GsonUtil.objectToByteArray(response));
         os.close();
     }
 
