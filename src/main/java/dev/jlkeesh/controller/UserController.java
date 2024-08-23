@@ -2,9 +2,14 @@ package dev.jlkeesh.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import dev.jlkeesh.criteria.UserCriteria;
-import dev.jlkeesh.dto.UserCreateDto;
-import dev.jlkeesh.dto.UserDto;
+import dev.jlkeesh.dto.BaseErrorDto;
+import dev.jlkeesh.dto.BaseResponse;
+import dev.jlkeesh.dto.user.UserCreateDto;
+import dev.jlkeesh.dto.user.UserDto;
+import dev.jlkeesh.exception.ServiceException;
 import dev.jlkeesh.service.UserService;
+import dev.jlkeesh.utils.GsonUtil;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +20,7 @@ import java.util.List;
 
 import static dev.jlkeesh.config.ApplicationConfig.GSON;
 
+@Log
 public class UserController extends AbstractController<UserService> {
 
     public UserController(UserService service) {
@@ -35,13 +41,30 @@ public class UserController extends AbstractController<UserService> {
 
     @Override
     protected void doPost(HttpExchange http) throws IOException {
-        http.sendResponseHeaders(200, 0);
-        InputStream is = http.getRequestBody();
-        UserCreateDto dto = GSON.fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), UserCreateDto.class);
-        Long id = service.create(dto);
         OutputStream os = http.getResponseBody();
-        os.write(id.toString().getBytes());
-        os.close();
+        try {
+            InputStream is = http.getRequestBody();
+            UserCreateDto dto = GSON.fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), UserCreateDto.class);
+            Long id = service.create(dto);
+            http.sendResponseHeaders(200, 0);
+            BaseResponse<Long> response = new BaseResponse<>(id);
+            os.write(GsonUtil.objectToByteArray(response));
+            os.close();
+        } catch (ServiceException e) {
+            http.sendResponseHeaders(e.getCode(), 0);
+            BaseErrorDto error = new BaseErrorDto(e.getMessage());
+            BaseResponse<Long> response = new BaseResponse<>(error);
+            os.write(GsonUtil.objectToByteArray(response));
+            os.close();
+            e.printStackTrace();
+        } catch (Exception e) {
+            http.sendResponseHeaders(500, 0);
+            BaseErrorDto error = new BaseErrorDto("internal service error");
+            BaseResponse<Long> response = new BaseResponse<>(error);
+            os.write(GsonUtil.objectToByteArray(response));
+            os.close();
+            e.printStackTrace();
+        }
     }
 
     @Override

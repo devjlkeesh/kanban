@@ -1,9 +1,9 @@
 package dev.jlkeesh.mapper.app;
 
 import dev.jlkeesh.domain.User;
-import dev.jlkeesh.dto.UserCreateDto;
-import dev.jlkeesh.dto.UserDto;
-import dev.jlkeesh.dto.UserUpdateDto;
+import dev.jlkeesh.dto.user.UserCreateDto;
+import dev.jlkeesh.dto.user.UserDto;
+import dev.jlkeesh.dto.user.UserUpdateDto;
 
 import java.util.List;
 

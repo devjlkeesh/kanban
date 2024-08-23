@@ -1,5 +1,6 @@
-package dev.jlkeesh.dto;
+package dev.jlkeesh.dto.user;
 
+import dev.jlkeesh.dto.Dto;
 import dev.jlkeesh.enums.AuthRole;
 
 import java.time.LocalDateTime;
