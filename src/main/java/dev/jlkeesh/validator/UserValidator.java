@@ -2,7 +2,7 @@ package dev.jlkeesh.validator;
 
 import dev.jlkeesh.dto.user.UserCreateDto;
 import dev.jlkeesh.exception.ServiceException;
-import dev.jlkeesh.utils.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 
 public final class UserValidator {
     private UserValidator() {
@@ -10,13 +10,13 @@ public final class UserValidator {
     }
 
     public static void isValidate(UserCreateDto dto) {
-        if (StringUtil.isBlank(dto.username())) {
+        if (StringUtils.isBlank(dto.username())) {
             throw new ServiceException("Username cannot be empty", 400);
         }
-        if (StringUtil.isBlank(dto.password())) {
+        if (StringUtils.isBlank(dto.password())) {
             throw new ServiceException("Password cannot be empty", 400);
         }
-        if (StringUtil.isBlank(dto.email())) {
+        if (StringUtils.isBlank(dto.email())) {
             throw new ServiceException("Email cannot be empty", 400);
         }
         if (dto.authRole() == null) {

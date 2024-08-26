@@ -66,4 +66,12 @@ public class AESUtil {
         }
     }
 
+    public static boolean isValidToken(String token) {
+        try {
+            decrypt(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

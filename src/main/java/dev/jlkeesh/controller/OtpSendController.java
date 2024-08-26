@@ -5,7 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import dev.jlkeesh.config.HandlerAdvice;
 import dev.jlkeesh.dto.BaseErrorDto;
 import dev.jlkeesh.dto.BaseResponse;
-import dev.jlkeesh.dto.auth.LoginDto;
+import dev.jlkeesh.dto.auth.OtpSendDto;
 import dev.jlkeesh.exception.ServiceException;
 import dev.jlkeesh.service.UserService;
 import dev.jlkeesh.utils.ExceptionUtil;
@@ -16,22 +16,23 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 @Log
-public class AuthLoginController implements HttpHandler {
+public class OtpSendController implements HttpHandler {
     private final UserService userService;
 
-    public AuthLoginController(UserService userService) {
+    public OtpSendController(UserService userService) {
         this.userService = userService;
     }
 
     @Override
     public void handle(HttpExchange http) throws IOException {
+        String method = http.getRequestMethod();
         try {
-            if (http.getRequestMethod().equals("POST")) {
-                LoginDto dto = GsonUtil.fromJson(http.getRequestBody(), LoginDto.class);
-                String token = userService.login(dto);
-                BaseResponse<String> response = new BaseResponse<>(token);
+            if (method.equals("POST")) {
+                OtpSendDto dto = GsonUtil.fromJson(http.getRequestBody(), OtpSendDto.class);
+                boolean sent = userService.otpSend(dto);
                 OutputStream os = http.getResponseBody();
                 http.sendResponseHeaders(200, 0);
+                BaseResponse<Boolean> response = new BaseResponse<>(sent);
                 os.write(GsonUtil.objectToByteArray(response));
                 os.close();
             } else {

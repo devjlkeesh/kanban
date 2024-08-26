@@ -16,4 +16,8 @@ public final class HandlerAdvice {
         os.write(GsonUtil.objectToByteArray(response));
         os.close();
     }
+
+    public static void handlerAdviceBadRequest(HttpExchange http) throws IOException {
+        handlerAdvice(http, new BaseErrorDto("bad request"), 400);
+    }
 }

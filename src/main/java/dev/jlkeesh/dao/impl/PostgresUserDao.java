@@ -4,6 +4,7 @@ import dev.jlkeesh.dao.UserDao;
 import dev.jlkeesh.domain.User;
 import dev.jlkeesh.exception.DataAccessException;
 import dev.jlkeesh.mapper.db.UserRowMapper;
+import dev.jlkeesh.utils.PasswordUtil;
 import dev.jlkeesh.utils.UserSession;
 import lombok.NonNull;
 import lombok.extern.java.Log;
@@ -30,6 +31,12 @@ public class PostgresUserDao implements UserDao {
             returning *;
             """;
 
+    private static final String RESET_PASSWORD = """
+            update users
+            set password   = ?
+            where id = ?
+            """;
+
     private static final String SOFT_DELETE_QUERY = """
             update users
             set is_deleted = true,
@@ -41,12 +48,10 @@ public class PostgresUserDao implements UserDao {
 
     private final Connection connection;
     private final UserRowMapper userRowMapper;
-    private final UserSession userSession;
 
-    public PostgresUserDao(Connection connection, UserRowMapper userRowMapper, UserSession userSession) {
+    public PostgresUserDao(Connection connection, UserRowMapper userRowMapper) {
         this.connection = connection;
         this.userRowMapper = userRowMapper;
-        this.userSession = userSession;
     }
 
     @Override
@@ -98,13 +103,14 @@ public class PostgresUserDao implements UserDao {
         }
     }
 
+
     @Override
     public User save(User user) {
         try (PreparedStatement pstm = connection.prepareStatement(INSERT_QUERY)) {
             pstm.setString(1, user.getUsername());
             pstm.setString(2, user.getPassword());
             pstm.setString(3, user.getEmail());
-            pstm.setLong(4, userSession.requireUserId());
+            pstm.setLong(4, UserSession.requireUserId());
             pstm.setString(5, user.getRole().toString());
             ResultSet rs = pstm.executeQuery();
             if (rs.next()) {
@@ -125,7 +131,7 @@ public class PostgresUserDao implements UserDao {
             psmt.setString(1, user.getUsername());
             psmt.setString(2, user.getEmail());
             psmt.setString(3, user.getRole().toString());
-            psmt.setLong(4, userSession.requireUserId());
+            psmt.setLong(4, UserSession.requireUserId());
             psmt.setLong(5, user.getId());
             ResultSet resultSet = psmt.executeQuery();
             if (resultSet.next()) {
@@ -141,6 +147,17 @@ public class PostgresUserDao implements UserDao {
     }
 
     @Override
+    public void resetPassword(Long userId, String newPassword) {
+        try (PreparedStatement psmt = connection.prepareStatement(RESET_PASSWORD)) {
+            psmt.setString(1, PasswordUtil.hash(newPassword));
+            psmt.setLong(2, userId);
+            psmt.execute();
+        } catch (SQLException e) {
+            throw new DataAccessException("Error updating user", e);
+        }
+    }
+
+    @Override
     public void delete(User user) {
         deleteById(user.getId());
     }
@@ -148,7 +165,7 @@ public class PostgresUserDao implements UserDao {
     @Override
     public void deleteById(Long id) {
         try (PreparedStatement psmt = connection.prepareStatement(SOFT_DELETE_QUERY)) {
-            psmt.setLong(1, userSession.requireUserId());
+            psmt.setLong(1, UserSession.requireUserId());
             psmt.setLong(2, id);
             psmt.execute();
             if (!psmt.execute()) {

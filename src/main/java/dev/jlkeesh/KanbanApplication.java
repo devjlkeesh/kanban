@@ -2,16 +2,22 @@ package dev.jlkeesh;
 
 import com.sun.net.httpserver.HttpServer;
 import dev.jlkeesh.controller.AuthLoginController;
+import dev.jlkeesh.controller.OtpConfirmController;
+import dev.jlkeesh.controller.OtpSendController;
 import dev.jlkeesh.controller.UserController;
+import dev.jlkeesh.dao.OtpDao;
 import dev.jlkeesh.dao.UserDao;
+import dev.jlkeesh.dao.impl.PostgresOtpDao;
 import dev.jlkeesh.dao.impl.PostgresUserDao;
 import dev.jlkeesh.mapper.app.UserMapper;
-import dev.jlkeesh.mapper.db.PostgresUserRowMapper;
+import dev.jlkeesh.mapper.db.OtpRowMapper;
 import dev.jlkeesh.mapper.db.UserRowMapper;
+import dev.jlkeesh.mapper.db.impl.PostgresOtpRowMapper;
+import dev.jlkeesh.mapper.db.impl.PostgresUserRowMapper;
 import dev.jlkeesh.properties.DatabaseProperties;
 import dev.jlkeesh.service.UserService;
+import dev.jlkeesh.service.impl.MailService;
 import dev.jlkeesh.service.impl.RestUserService;
-import dev.jlkeesh.utils.UserSession;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
@@ -29,19 +35,27 @@ public class KanbanApplication {
                 DatabaseProperties.username,
                 DatabaseProperties.password
         );
-        UserSession userSession = new UserSession();
         UserRowMapper userRowMapper = new PostgresUserRowMapper();
         UserMapper userMapper = new UserMapper();
+        OtpRowMapper otpRowMapper = new PostgresOtpRowMapper();
 
-        UserDao userDao = new PostgresUserDao(connection, userRowMapper, userSession);
-        UserService userService = new RestUserService(userDao, userMapper);
+        MailService mailService = new MailService();
+
+        UserDao userDao = new PostgresUserDao(connection, userRowMapper);
+        OtpDao otpDao = new PostgresOtpDao(connection, otpRowMapper);
+        UserService userService = new RestUserService(userDao, otpDao, userMapper, mailService);
 
         UserController userController = new UserController(userService);
         AuthLoginController authLoginController = new AuthLoginController(userService);
+        OtpSendController otpSendController = new OtpSendController(userService);
+        OtpConfirmController otpConfirmController = new OtpConfirmController(userService);
+
 
         HttpServer httpServer = HttpServer.create(new InetSocketAddress(9090), 0);
         httpServer.createContext("/users", userController);
         httpServer.createContext("/auth/login", authLoginController);
+        httpServer.createContext("/otp/send", otpSendController);
+        httpServer.createContext("/otp/confirm", otpConfirmController);
         httpServer.setExecutor(Executors.newSingleThreadExecutor());
         httpServer.start();
         log.info("Kanban application started");

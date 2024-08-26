@@ -1,8 +1,8 @@
-package dev.jlkeesh.mapper.db;
+package dev.jlkeesh.mapper.db.impl;
 
 import dev.jlkeesh.domain.User;
 import dev.jlkeesh.enums.AuthRole;
-import dev.jlkeesh.exception.DataAccessException;
+import dev.jlkeesh.mapper.db.UserRowMapper;
 import lombok.extern.java.Log;
 
 import java.sql.ResultSet;

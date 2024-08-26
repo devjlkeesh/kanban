@@ -11,4 +11,6 @@ public interface UserDao extends BaseDao<User, Long> {
     Optional<User> findByEmail(@NonNull String email);
 
     Optional<User> findByEmailOrUsername(@NonNull String subject);
+
+    void resetPassword(Long userId, String newPassword);
 }
